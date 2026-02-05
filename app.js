@@ -1,9 +1,15 @@
 // Configuration
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+const CRYPTOCOMPARE_API = 'https://min-api.cryptocompare.com';
 const COIN_IDS = {
     bitcoin: 'bitcoin',
     chiliz: 'chiliz',
     pepper: 'pepper'
+};
+// Coins that use CryptoCompare for full history (BTC, CHZ)
+const CRYPTOCOMPARE_COINS = {
+    bitcoin: 'BTC',
+    chiliz: 'CHZ'
 };
 
 // Chart instances
@@ -58,6 +64,31 @@ async function fetchMarketData(coinId, days) {
 
     const data = await response.json();
     return data.prices; // Array of [timestamp, price]
+}
+
+// Fetch historical market data from CryptoCompare (full history for BTC/CHZ)
+async function fetchCryptoCompareData(fsym, days) {
+    const limit = days === 'max' ? 2000 : Math.min(days, 2000);
+    const url = `${CRYPTOCOMPARE_API}/data/v2/histoday?fsym=${fsym}&tsym=USD&limit=${limit}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Failed to fetch ${fsym} data from CryptoCompare: ${response.statusText}`);
+    }
+
+    const json = await response.json();
+
+    if (json.Response === 'Error') {
+        throw new Error(`CryptoCompare error for ${fsym}: ${json.Message}`);
+    }
+
+    const dataPoints = json.Data.Data;
+
+    // Convert to CoinGecko-compatible format: [[timestamp_ms, price]]
+    return dataPoints
+        .filter(d => d.close > 0)
+        .map(d => [d.time * 1000, d.close]);
 }
 
 // Calculate ratio between two price series
@@ -182,16 +213,19 @@ async function loadData(days) {
     errorEl.style.display = 'none';
 
     try {
-        // Fetch all coin data with delays to avoid rate limiting
-        const btcPrices = await fetchMarketData(COIN_IDS.bitcoin, days);
-        await delay(500); // Small delay between requests
+        // Fetch BTC and CHZ from CryptoCompare (full history support)
+        // Fetch them in parallel since CryptoCompare has generous rate limits
+        const [btcPrices, chzPrices] = await Promise.all([
+            fetchCryptoCompareData(CRYPTOCOMPARE_COINS.bitcoin, days),
+            fetchCryptoCompareData(CRYPTOCOMPARE_COINS.chiliz, days)
+        ]);
 
-        const chzPrices = await fetchMarketData(COIN_IDS.chiliz, days);
-        await delay(500);
-
+        // Fetch PEPPER from CoinGecko (only free source available)
+        // Cap CoinGecko days at 365 since free tier doesn't support more
+        const geckoMaxDays = days === 'max' ? 365 : Math.min(days, 365);
         let pepperPrices;
         try {
-            pepperPrices = await fetchMarketData(COIN_IDS.pepper, days);
+            pepperPrices = await fetchMarketData(COIN_IDS.pepper, geckoMaxDays);
         } catch (e) {
             console.warn('PEPPER data may be limited:', e.message);
             pepperPrices = [];
