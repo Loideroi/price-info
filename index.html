@@ -14,6 +14,47 @@
     </header>
 
     <main>
+        <div class="control-panel">
+            <div class="control-group">
+                <label class="control-label">Chart Type</label>
+                <div class="toggle-group" id="chart-type-toggle">
+                    <button class="toggle-btn active" data-type="area">Area</button>
+                    <button class="toggle-btn" data-type="candlestick">Candlestick</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Interval</label>
+                <div class="toggle-group" id="interval-toggle">
+                    <button class="toggle-btn" data-interval="1H">1H</button>
+                    <button class="toggle-btn" data-interval="4H">4H</button>
+                    <button class="toggle-btn active" data-interval="1D">1D</button>
+                    <button class="toggle-btn" data-interval="1W">1W</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Indicators</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggle-sma20"> SMA 20
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggle-sma50"> SMA 50
+                    </label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Volume</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggle-volume" checked> Show volume
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <div class="timeframe-selector">
             <button class="timeframe-btn" data-days="7">1W</button>
             <button class="timeframe-btn" data-days="30">1M</button>
@@ -52,7 +93,8 @@
 
     <footer>
         <p>Data sourced from <a href="https://www.cryptocompare.com" target="_blank" rel="noopener">CryptoCompare</a> (BTC, CHZ) and <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko</a> (PEPPER)</p>
-        <p class="note">Note: PEPPER data limited to 365 days (CoinGecko free tier). BTC and CHZ have full history via CryptoCompare.</p>
+        <p class="note">Note: PEPPER data limited to daily intervals (CoinGecko free tier). Hourly intervals only available for BTC/CHZ via CryptoCompare.</p>
+        <p class="note">SMA 20 (orange) and SMA 50 (pink) indicators available. Your preferences are saved locally.</p>
     </footer>
 
     <script src="app.js"></script>
