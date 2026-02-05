@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Exchange Rates</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Historical Exchange Rate Charts</h1>
+        <p class="subtitle">CHZ/BTC and PEPPER/CHZ ratios over time</p>
+    </header>
+
+    <main>
+        <div class="timeframe-selector">
+            <button class="timeframe-btn" data-days="7">1W</button>
+            <button class="timeframe-btn" data-days="30">1M</button>
+            <button class="timeframe-btn" data-days="90">3M</button>
+            <button class="timeframe-btn" data-days="180">6M</button>
+            <button class="timeframe-btn active" data-days="365">1Y</button>
+            <button class="timeframe-btn" data-days="max">ALL</button>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <h2>CHZ/BTC Ratio</h2>
+                <p class="chart-description">How many CHZ per 1 BTC</p>
+                <div id="chart-chz-btc" class="chart"></div>
+                <div id="legend-chz-btc" class="legend"></div>
+            </div>
+
+            <div class="chart-wrapper">
+                <h2>PEPPER/CHZ Ratio</h2>
+                <p class="chart-description">How many PEPPER per 1 CHZ</p>
+                <div id="chart-pepper-chz" class="chart"></div>
+                <div id="legend-pepper-chz" class="legend"></div>
+            </div>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading historical data...</p>
+        </div>
+
+        <div id="error" class="error" style="display: none;">
+            <p id="error-message"></p>
+            <button onclick="location.reload()">Retry</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>Data sourced from <a href="https://www.coingecko.com" target="_blank" rel="noopener">CoinGecko API</a></p>
+        <p class="note">Note: Free tier limited to 365 days of history. PEPPER data may be limited due to token age.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
