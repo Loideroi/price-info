@@ -63,7 +63,9 @@ PEPPER per CHZ = CHZ_USD_price / PEPPER_USD_price
 ### Stack
 - **Frontend:** Plain HTML + JavaScript (no framework)
 - **Charting:** TradingView Lightweight Charts (free, open-source)
-- **Data:** CoinGecko API (free tier) or similar crypto price API
+- **Data Sources:**
+  - **CryptoCompare API** — Primary source for BTC and CHZ (supports ~2000 days history)
+  - **CoinGecko API** — Secondary source for PEPPER (limited to 365 days on free tier)
 
 ### Data API Requirements
 | Requirement | Specification |
@@ -72,6 +74,12 @@ PEPPER per CHZ = CHZ_USD_price / PEPPER_USD_price
 | Tokens supported | BTC, CHZ, PEPPER |
 | Rate limits | Must work within free API tier limits |
 | Update frequency | Daily (not real-time) |
+
+### Data Source Details
+| Source | Endpoint | Limit | Used For |
+|--------|----------|-------|----------|
+| CryptoCompare | `/data/v2/histoday` | Up to 2000 daily data points | BTC, CHZ |
+| CoinGecko | `/coins/{id}/market_chart` | 365 days max (free tier) | PEPPER |
 
 ### Display Requirements
 
@@ -109,7 +117,7 @@ PEPPER per CHZ = CHZ_USD_price / PEPPER_USD_price
 |  "PEPPER tokens per 1 CHZ"               |
 |                                          |
 +------------------------------------------+
-|  Data source: CoinGecko | Last updated   |
+|  Data sources: CryptoCompare, CoinGecko    |
 +------------------------------------------+
 ```
 
@@ -140,13 +148,35 @@ PEPPER per CHZ = CHZ_USD_price / PEPPER_USD_price
 
 ## Data Availability Notes
 
-| Token | CoinGecko ID | Historical Data |
-|-------|--------------|-----------------|
-| BTC | bitcoin | Full history available |
-| CHZ | chiliz | Available since 2019 |
-| PEPPER | pepper | Verify availability - may have limited history |
+| Token | Source | Symbol/ID | Historical Data |
+|-------|--------|-----------|-----------------|
+| BTC | CryptoCompare | BTC | ~2000 days (5+ years) |
+| CHZ | CryptoCompare | CHZ | Available since 2019 (~2000 days) |
+| PEPPER | CoinGecko | pepper | Limited to 365 days (free tier) |
 
-**Risk:** PEPPER may have limited historical data or not be listed on major APIs. Fallback: Display only available data range with clear indication.
+**Note:** PEPPER data is limited to 365 days due to CoinGecko free tier restrictions. The UI displays a warning when PEPPER data is unavailable or limited.
+
+---
+
+## Data Source Architecture
+
+### Why Multiple Sources?
+- **CoinGecko free tier** limits historical data to 365 days, insufficient for long-term CHZ/BTC analysis
+- **CryptoCompare** provides up to 2000 daily data points on the free tier, enabling 5+ years of history
+- PEPPER is not available on CryptoCompare, so CoinGecko remains necessary
+
+### Fetching Strategy
+1. **BTC and CHZ** are fetched from CryptoCompare in parallel (generous rate limits)
+2. **PEPPER** is fetched from CoinGecko after CryptoCompare calls complete
+3. CoinGecko requests are capped at 365 days to stay within free tier limits
+
+### Rate Limiting
+- CryptoCompare: No delays needed between requests
+- CoinGecko: Single request for PEPPER only, avoiding rate limit issues
+
+### Fallback Behavior
+- If PEPPER data is unavailable, the PEPPER/CHZ chart displays empty with a warning message
+- API errors are caught and displayed to the user with retry guidance
 
 ---
 
